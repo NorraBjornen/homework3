@@ -2,6 +2,7 @@ package com.example.homework3
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.View
 import android.widget.TextView
 
 class MainActivity : AppCompatActivity() {
@@ -30,6 +31,8 @@ class MainActivity : AppCompatActivity() {
         for(i in 0 until data.size){
             val txt = TextView(this)
             txt.text = data[i]
+            if(i % 2 == 0)
+                txt.visibility = View.GONE
             cvg.addView(txt)
         }
     }
