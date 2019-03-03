@@ -15,7 +15,7 @@ class CustomViewGroup @JvmOverloads constructor(context: Context,attrs: Attribut
 
     init {
         val typedArray: TypedArray = context.obtainStyledAttributes(attrs, R.styleable.CustomViewGroup)
-        distanceBetweenViews = typedArray.getDimension(R.styleable.CustomViewGroup_cvg_distance_between_views, 0f).toInt()
+        distanceBetweenViews = typedArray.getDimensionPixelSize(R.styleable.CustomViewGroup_cvg_distance_between_views, 0)
         typedArray.recycle()
     }
 
