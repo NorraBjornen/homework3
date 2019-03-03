@@ -2,5 +2,14 @@
 <resources>
     <declare-styleable name="CustomViewGroup">
         <attr name="cvg_distance_between_views" format="dimension" />
+        <attr name="cvg_views_height" format="dimension" />
+        <attr name="android:layout_marginBottom" format="dimension" />
+        <attr name="android:layout_marginTop" format="dimension" />
+        <attr name="android:layout_marginLeft" format="dimension" />
+        <attr name="android:layout_marginRight" format="dimension" />
+        <attr name="android:gravity" format="enum" >
+            <enum name="left" value="3" />
+            <enum name="right" value="5"/>
+        </attr>
     </declare-styleable>
 </resources>

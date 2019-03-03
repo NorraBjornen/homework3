@@ -5,17 +5,43 @@ import android.content.res.TypedArray
 import android.util.AttributeSet
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.view.isVisible
 
 class CustomViewGroup @JvmOverloads constructor(context: Context,attrs: AttributeSet? = null,defStyleAttr: Int = 0) : ViewGroup(context, attrs, defStyleAttr) {
 
-    private val distanceBetweenViews : Int
-    private val verticalPadding = 20
-    private val childViewHeight = 50
+    //private val distanceBetweenViews : Int
+    private val childViewHeight : Int
+
+    private val marginTop : Int
+    private val marginBottom : Int
+    private val marginLeft : Int
+    private val marginRight : Int
+
+    private val marginLeftPlusRight : Int
+    private val marginTopPlusBottom : Int
+
+    private val toEnd : Boolean
+
+    companion object {
+        private const val GRAVITY_LEFT = 3
+        private const val GRAVITY_RIGHT = 5
+    }
+
 
     init {
         val typedArray: TypedArray = context.obtainStyledAttributes(attrs, R.styleable.CustomViewGroup)
-        distanceBetweenViews = typedArray.getDimensionPixelSize(R.styleable.CustomViewGroup_cvg_distance_between_views, 0)
+        //distanceBetweenViews = typedArray.getDimensionPixelSize(R.styleable.CustomViewGroup_cvg_distance_between_views, 0)
+        childViewHeight = typedArray.getDimensionPixelSize(R.styleable.CustomViewGroup_cvg_views_height, 50)
+
+        marginTop = typedArray.getDimensionPixelSize(R.styleable.CustomViewGroup_android_layout_marginTop, 0)
+        marginBottom = typedArray.getDimensionPixelSize(R.styleable.CustomViewGroup_android_layout_marginBottom, 0)
+        marginLeft = typedArray.getDimensionPixelSize(R.styleable.CustomViewGroup_android_layout_marginLeft, 0)
+        marginRight = typedArray.getDimensionPixelSize(R.styleable.CustomViewGroup_android_layout_marginRight, 0)
+
+        marginLeftPlusRight = marginLeft + marginRight
+        marginTopPlusBottom = marginTop + marginBottom
+
+        val gravity = typedArray.getInt(R.styleable.CustomViewGroup_android_gravity, GRAVITY_LEFT)
+        toEnd = gravity == GRAVITY_RIGHT
         typedArray.recycle()
     }
 
@@ -37,22 +63,23 @@ class CustomViewGroup @JvmOverloads constructor(context: Context,attrs: Attribut
             child.measure(childWidthMeasureSpec, childHeightMeasureSpec)
         }
 
-        var usedHeight = 0
+        var usedHeight = childViewHeight + marginTopPlusBottom
         var usedWidthInRow = 0
 
         for (index in 0 until childCount) {
             val child = getChildAt(index)
             if(child.measuredWidth == 0)
                 continue
-            if(usedWidthInRow + distanceBetweenViews + child.measuredWidth < width)
-                usedWidthInRow += (distanceBetweenViews + child.measuredWidth)
+
+            if(usedWidthInRow + marginLeftPlusRight + child.measuredWidth < width)
+                usedWidthInRow += (marginLeftPlusRight + child.measuredWidth)
             else {
-                usedWidthInRow = distanceBetweenViews + child.measuredWidth
-                usedHeight += (childViewHeight + verticalPadding)
+                usedWidthInRow = marginLeftPlusRight + child.measuredWidth
+                usedHeight += childViewHeight + marginTopPlusBottom
             }
         }
 
-        setMeasuredDimension(width, usedHeight + childViewHeight)
+        setMeasuredDimension(width, usedHeight)
     }
 
     override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
@@ -65,14 +92,21 @@ class CustomViewGroup @JvmOverloads constructor(context: Context,attrs: Attribut
             val child = getChildAt(index)
             if(child.measuredWidth == 0)
                 continue
-            if(usedWidthInRow + distanceBetweenViews + child.measuredWidth < width){
-                child.layout(usedWidthInRow, usedHeight, usedWidthInRow + child.measuredWidth, usedHeight + child.measuredHeight)
-                usedWidthInRow += (distanceBetweenViews + child.measuredWidth)
+
+            if(usedWidthInRow + marginLeftPlusRight + child.measuredWidth < width){
+                if(toEnd)
+                    child.layout(width - (usedWidthInRow + child.measuredWidth + marginRight), usedHeight + marginTop, width - (usedWidthInRow + marginRight), usedHeight + marginTop + child.measuredHeight)
+                else
+                    child.layout(usedWidthInRow + marginLeft, usedHeight + marginTop, usedWidthInRow + marginLeft + child.measuredWidth, usedHeight + marginTop + child.measuredHeight)
+                usedWidthInRow += marginLeftPlusRight + child.measuredWidth
             }
             else {
-                usedHeight += (child.measuredHeight + verticalPadding)
-                child.layout(0, usedHeight, child.measuredWidth,usedHeight + child.measuredHeight)
-                usedWidthInRow = distanceBetweenViews + child.measuredWidth
+                usedHeight += (child.measuredHeight + marginTopPlusBottom)
+                if(toEnd)
+                    child.layout(width - (child.measuredWidth + marginRight), usedHeight + marginTop, width - marginRight,usedHeight + marginTop + child.measuredHeight)
+                else
+                    child.layout(marginLeft, usedHeight + marginTop,marginLeft + child.measuredWidth ,usedHeight + marginTop + child.measuredHeight)
+                usedWidthInRow = marginLeftPlusRight + child.measuredWidth
             }
         }
     }
